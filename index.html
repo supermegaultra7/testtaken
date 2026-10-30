@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie Finder</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f4f9; color: #333; }
+        .container { max-width: 600px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .search-box { margin: 20px 0; padding: 15px; background: #eef2f7; border-radius: 6px; }
+        input { padding: 8px; width: 60%; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        button { background-color: #007bff; color: white; border: none; padding: 9px 15px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        button:hover { background-color: #0056b3; }
+        .result-box { background: #272822; color: #f8f8f2; padding: 15px; border-radius: 5px; min-height: 20px; font-family: monospace; }
+        .test-btn { background-color: #28a745; margin-top: 15px; }
+        .test-btn:hover { background-color: #218838; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Cookie Finder Tool</h2>
+        <p>Type the name of any cookie below to search for its value on this page.</p>
+        
+        <!-- SEARCH INTERFACE -->
+        <div class="search-box">
+            <input type="text" id="cookie-search-input" placeholder="e.g., favorite_color">
+            <button onclick="searchForCookie()">Find Cookie</button>
+        </div>
+
+        <h4>Result:</h4>
+        <div class="result-box" id="search-result">Result will appear here...</div>
+
+        <!-- QUICK TEST BUTTON -->
+        <button class="test-btn" onclick="createSampleCookie()">Create Sample Cookie ('favorite_color')</button>
+    </div>
+
+    <script>
+        // THE SEARCH LOGIC: This function takes a name and finds its specific value
+        function getCookieValue(name) {
+            const nameEQ = encodeURIComponent(name) + "=";
+            const cookieArray = document.cookie.split(';');
+            
+            for (let i = 0; i < cookieArray.length; i++) {
+                let cookie = cookieArray[i].trim();
+                // If this specific cookie starts with the name we are looking for...
+                if (cookie.indexOf(nameEQ) === 0) {
+                    // Cut off the name part and return just the value
+                    return decodeURIComponent(cookie.substring(nameEQ.length));
+                }
+            }
+            return null; // Return null if it doesn't exist
+        }
+
+        // Triggered when you click the "Find Cookie" button
+        function searchForCookie() {
+            const inputName = document.getElementById('cookie-search-input').value.trim();
+            const resultDisplay = document.getElementById('search-result');
+
+            if (!inputName) {
+                resultDisplay.style.color = "#ff6b6b";
+                resultDisplay.textContent = "Please type a cookie name first.";
+                return;
+            }
+
+            const foundValue = getCookieValue(inputName);
+
+            if (foundValue !== null) {
+                resultDisplay.style.color = "#a6e22e"; // Green text for success
+                resultDisplay.textContent = `Found! Value = "${foundValue}"`;
+            } else {
+                resultDisplay.style.color = "#ff6b6b"; // Red text for not found
+                resultDisplay.textContent = `Cookie "${inputName}" was not found on this page.`;
+            }
+        }
+
+        // Helper button to give you something to instantly search for
+        function createSampleCookie() {
+            document.cookie = "favorite_color=blue; path=/; SameSite=Lax";
+            document.getElementById('cookie-search-input').value = "favorite_color";
+            searchForCookie();
+        }
+    </script>
+
+</body>
+</html>
