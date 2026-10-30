@@ -1,0 +1,96 @@
+/**
+ * Utility object for reading, creating, and deleting browser cookies.
+ */
+const CookieManager = {
+    /**
+     * Retrieves the raw cookie string containing all accessible cookies.
+     * @returns {string} The raw document.cookie string.
+     */
+    getRawString: function() {
+        return document.cookie;
+    },
+
+    /**
+     * Gets the value of a specific cookie by its name.
+     * @param {string} name - The name of the cookie to find.
+     * @returns {string|null} The decoded value of the cookie, or null if not found.
+     */
+    get: function(name) {
+        const nameEQ = encodeURIComponent(name) + "=";
+        const ca = document.cookie.split(';');
+        
+        for (let i = 0; i < ca.length; i++) {
+            let c = ca[i].trim();
+            if (c.indexOf(nameEQ) === 0) {
+                return decodeURIComponent(c.substring(nameEQ.length));
+            }
+        }
+        return null;
+    },
+
+    /**
+     * Parses all accessible cookies into a clean JavaScript Object (Key-Value pairs).
+     * @returns {Object} An object representing all accessible cookies.
+     */
+    getAllAsObject: function() {
+        const cookies = {};
+        if (document.cookie === "") return cookies;
+        
+        document.cookie.split(';').forEach(cookie => {
+            const parts = cookie.split('=');
+            const name = decodeURIComponent(parts[0].trim());
+            const value = parts.slice(1).join('='); // Handles values that contain '='
+            cookies[name] = decodeURIComponent(value);
+        });
+        
+        return cookies;
+    },
+
+    /**
+     * Sets or updates a cookie.
+     * @param {string} name - Name of the cookie.
+     * @param {string} value - Value of the cookie.
+     * @param {number} [daysActive] - Optional days until expiration.
+     * @param {string} [path='/'] - Optional path constraint.
+     */
+    set: function(name, value, daysActive, path = '/') {
+        let expires = "";
+        if (daysActive) {
+            const date = new Date();
+            date.setTime(date.getTime() + (daysActive * 24 * 60 * 60 * 1000));
+            expires = "; expires=" + date.toUTCString();
+        }
+        // Secure and SameSite attributes are recommended for modern browsers
+        document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}${expires}; path=${path}; SameSite=Lax`;
+    },
+
+    /**
+     * Deletes a cookie by setting its expiration date to the past.
+     * @param {string} name - Name of the cookie to delete.
+     * @param {string} [path='/'] - Path must match the path the cookie was created with.
+     */
+    delete: function(name, path = '/') {
+        document.cookie = `${encodeURIComponent(name)}=; Max-Age=-99999999; path=${path}; SameSite=Lax`;
+    }
+};
+
+// ==========================================
+// EXAMPLE USAGE:
+// ==========================================
+
+// 1. Create a couple of cookies to test
+CookieManager.set("username", "Alex");
+CookieManager.set("theme", "dark", 7); // Expires in 7 days
+
+// 2. Read the raw string
+console.log("Raw Cookie String:", CookieManager.getRawString());
+
+// 3. Get a specific cookie value
+console.log("Username Value:", CookieManager.get("username")); 
+
+// 4. Get all accessible cookies formatted as a nice object
+console.log("All Cookies Object:", CookieManager.getAllAsObject());
+
+// 5. Delete a cookie
+CookieManager.delete("username");
+console.log("After Deletion:", CookieManager.getAllAsObject());
